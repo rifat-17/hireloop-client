@@ -10,14 +10,18 @@ type SignUpFormData = {
     email: string;
     password: string;
     confirmPassword: string;
+    role: string;
     acceptTerms: boolean;
 };
+
+const ROLES = ["seeker", "recruiter", "admin"] as const;
 
 const initialFormData: SignUpFormData = {
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    role: "seeker",
     acceptTerms: false,
 };
 
@@ -66,6 +70,7 @@ export function SignUpForm() {
                 name: formData.fullName,
                 email: formData.email,
                 password: formData.password,
+                role: formData.role,
                 callbackURL: "/",
             });
 
@@ -152,6 +157,32 @@ export function SignUpForm() {
                         autoComplete="email"
                         required
                     />
+                </div>
+
+                {/* Role */}
+                <div role="radiogroup" aria-label="Account type">
+                    <span id="role-label" className={labelClass}>
+                        Account Type
+                    </span>
+
+                    <div className="grid grid-cols-3 gap-2">
+                        {ROLES.map((role) => (
+                            <label
+                                key={role}
+                                className="flex cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-white/5 py-3 text-sm capitalize text-gray-400 transition has-[:checked]:border-violet-500 has-[:checked]:bg-violet-500/10 has-[:checked]:text-white"
+                            >
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value={role}
+                                    checked={formData.role === role}
+                                    onChange={handleChange}
+                                    className="sr-only"
+                                />
+                                {role}
+                            </label>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Password */}
