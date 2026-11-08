@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { MenuIcon } from "lucide-react"
@@ -15,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { authClient } from "@/lib/auth-client"
 
 
 const navLinks = [
@@ -38,6 +41,21 @@ const getStartedButtonClass = cn(
 )
 
 export function Navbar() {
+
+  const { data: session } = authClient.useSession();
+
+  console.log("Session Data:", session);
+
+  const handlesignOut = async () => {
+    try {
+      await authClient.signOut();
+      console.log("Sign Out Successful");
+    } catch (error) {
+      console.error("Sign Out Error:", error);
+    }
+  };
+
+
   return (
     <header className="relative z-20 px-4 pt-4 sm:px-6 lg:px-[60px] lg:pt-6">
       <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between rounded-2xl bg-[#222] pl-5 pr-2 lg:h-[74px] lg:pl-6">
@@ -69,12 +87,25 @@ export function Navbar() {
           <span className="mx-6 h-6 w-px bg-white/40" aria-hidden="true" />
 
           <div className="flex items-center gap-4">
-            <Link href="/login" className={signInButtonClass}>
-              Sign In
-            </Link>
-            <Link href="/register" className={getStartedButtonClass}>
-              Get Started
-            </Link>
+            {session?.user ?
+              <>
+                <span className="text-white">Welcome, {session.user.name}!</span>
+                <Button
+                  className={getStartedButtonClass}
+                  onClick={handlesignOut}
+
+                >
+                  Sign Out
+                </Button>
+              </>
+              : <>
+                <Link href="/login" className={signInButtonClass}>
+                  Sign In
+                </Link>
+                <Link href="/register" className={getStartedButtonClass}>
+                  Get Started
+                </Link>
+              </>}
           </div>
         </nav>
 
@@ -127,36 +158,51 @@ export function Navbar() {
             </nav>
 
             <SheetFooter className="gap-3 px-6 pb-6">
-              <SheetClose
-                nativeButton={false}
-                render={
-                  <Link
-                    href="/login"
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      buttonGlow,
-                      "h-12 w-full rounded-xl text-base font-semibold text-brand hover:bg-white/5 hover:text-brand"
-                    )}
-                  />
-                }
-              >
-                Sign In
-              </SheetClose>
-              <SheetClose
-                nativeButton={false}
-                render={
-                  <Link
-                    href="/register"
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      buttonGlow,
-                      "h-12 w-full rounded-xl bg-brand text-base font-medium text-white hover:bg-brand/90"
-                    )}
-                  />
-                }
-              >
-                Get Started
-              </SheetClose>
+              {session?.user ?
+                <>
+                  <span className="text-white">Welcome, {session.user.name}!</span>
+                  <Button
+                    variant="ghost"
+                    size="icon-lg"
+                    className="text-white hover:bg-white/10"
+                    onClick={handlesignOut}
+                  >
+                    Sign Out
+                  </Button>
+                </>
+                : <>
+                  <SheetClose
+                    nativeButton={false}
+                    render={
+                      <Link
+                        href="/login"
+                        className={cn(
+                          buttonVariants({ variant: "ghost" }),
+                          buttonGlow,
+                          "h-12 w-full rounded-xl text-base font-semibold text-brand hover:bg-white/5 hover:text-brand"
+                        )}
+                      />
+                    }
+                  >
+                    Sign In
+                  </SheetClose>
+                  <SheetClose
+                    nativeButton={false}
+                    render={
+                      <Link
+                        href="/register"
+                        className={cn(
+                          buttonVariants({ variant: "ghost" }),
+                          buttonGlow,
+                          "h-12 w-full rounded-xl bg-brand text-base font-medium text-white hover:bg-brand/90"
+                        )}
+                      />
+                    }
+                  >
+                    Get Started
+                  </SheetClose>
+                </>
+              }
             </SheetFooter>
           </SheetContent>
         </Sheet>

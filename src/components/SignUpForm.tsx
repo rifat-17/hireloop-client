@@ -3,6 +3,7 @@
 
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ChangeEvent } from "react";
 
 type SignUpFormData = {
@@ -10,7 +11,7 @@ type SignUpFormData = {
     email: string;
     password: string;
     confirmPassword: string;
-    role: string;
+    role: "seeker" | "recruiter" | "admin";
     acceptTerms: boolean;
 };
 
@@ -26,6 +27,9 @@ const initialFormData: SignUpFormData = {
 };
 
 export function SignUpForm() {
+
+      const router = useRouter()
+
     const [formData, setFormData] =
         useState<SignUpFormData>(initialFormData);
 
@@ -84,6 +88,12 @@ export function SignUpForm() {
             console.log("Sign Up Successful:", {
                 user: data?.user,
             });
+
+            // Redirect to homepage on success
+            if (data?.user) {
+                router.replace("/");
+                router.refresh();
+            }
 
         } catch (err) {
             console.error("Sign Up Error:", err);
