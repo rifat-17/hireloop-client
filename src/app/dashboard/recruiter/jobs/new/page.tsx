@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { createJob } from "@/lib/actions/jobs";
 
 export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship";
 export type SalaryFrequency = "per hour" | "per month" | "per year";
@@ -115,7 +116,9 @@ export default function NewJobPage() {
 
         try {
             // Collected form data ready for API dispatch
-            console.log("Job Post Submitted:", formData);
+            const result = await createJob(formData);
+
+            console.log("Job Post Submitted:", result);
 
             // Brief delay to reflect action
             await new Promise((resolve) => setTimeout(resolve, 500));
