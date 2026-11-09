@@ -3,8 +3,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { MenuIcon } from "lucide-react"
-
-
 import logo from "@/images/logo.png"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -20,11 +18,7 @@ import {
 import { authClient } from "@/lib/auth-client"
 
 
-const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/companies" },
-  { label: "Pricing", href: "/pricing" },
-]
+
 
 const buttonGlow = "shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)]"
 
@@ -41,10 +35,17 @@ const getStartedButtonClass = cn(
 )
 
 export function Navbar() {
-
+  
   const { data: session } = authClient.useSession();
 
   console.log("Session Data:", session);
+
+  const navLinks = [
+  { label: "Browse Jobs", href: "/jobs" },
+  { label: "Company", href: "/companies" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Dashboard", href: `/dashboard/${session?.user.role || 'seeker'}` },
+]
 
   const handlesignOut = async () => {
     try {
