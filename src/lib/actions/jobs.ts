@@ -9,7 +9,15 @@ export const createJob = async (jobData: JobFormData) => {
         headers: {
             'content-type': 'application/json',
         },
-        body: JSON.stringify(jobData)   ,
-    }); 
+        body: JSON.stringify(jobData),
+    });
+    return response.json();
+};
+
+export const deleteJob = async (jobId: string) => {
+    const response = await fetch(`${API_URL}/jobs/${jobId}`, {
+        method: "DELETE",
+    });
+    
     return response.json();
 };

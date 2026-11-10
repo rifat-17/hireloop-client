@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createJob } from "@/lib/actions/jobs";
+import { toast } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
 export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship";
 export type SalaryFrequency = "per hour" | "per month" | "per year";
@@ -36,6 +38,8 @@ export interface JobFormData {
     salaryFrequency: SalaryFrequency;
     responsibilities: string;
     requirements: string;
+    status: "Active" | "Expired" | "Draft";
+    applicantsCount: number;
 }
 
 const JOB_CATEGORIES = [
@@ -73,12 +77,16 @@ const initialFormData: JobFormData = {
     salaryFrequency: "per year",
     responsibilities: "",
     requirements: "",
+    status: "Active",
+    applicantsCount: 0,
 };
 
 export default function NewJobPage() {
     const [formData, setFormData] = useState<JobFormData>(initialFormData);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    const router = useRouter();
 
     // Simple, clean change handler for inputs & textareas
     const handleChange = (
@@ -121,11 +129,19 @@ export default function NewJobPage() {
             console.log("Job Post Submitted:", result);
 
             // Brief delay to reflect action
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            // await new Promise((resolve) => setTimeout(resolve, 500));
             setSuccess(true);
+            toast.add({
+                title: "Job Posted Successfully",
+                description: `Position "${formData.title}" at ${formData.companyName} has been saved.`,
+                variant: "success",
+            });
+
+            router.push("/dashboard/recruiter/jobs");
+
         } catch (error) {
             console.error("Error creating job:", error);
-        } finally { 
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -157,7 +173,7 @@ export default function NewJobPage() {
                         </p>
                     </div>
 
-                    
+
                 </div>
             </div>
 
@@ -280,11 +296,10 @@ export default function NewJobPage() {
                                             key={type}
                                             type="button"
                                             onClick={() => handleJobTypeChange(type)}
-                                            className={`flex h-11 items-center justify-center rounded-xl border text-sm font-medium transition ${
-                                                isSelected
-                                                    ? "border-violet-500 bg-violet-600/20 text-white shadow-sm shadow-violet-500/20"
-                                                    : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                            }`}
+                                            className={`flex h-11 items-center justify-center rounded-xl border text-sm font-medium transition ${isSelected
+                                                ? "border-violet-500 bg-violet-600/20 text-white shadow-sm shadow-violet-500/20"
+                                                : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
+                                                }`}
                                         >
                                             {type}
                                         </button>
@@ -329,14 +344,12 @@ export default function NewJobPage() {
                                 type="button"
                                 aria-checked={formData.isRemote}
                                 role="switch"
-                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                    formData.isRemote ? "bg-violet-600" : "bg-white/20"
-                                }`}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${formData.isRemote ? "bg-violet-600" : "bg-white/20"
+                                    }`}
                             >
                                 <span
-                                    className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                        formData.isRemote ? "translate-x-5" : "translate-x-0"
-                                    }`}
+                                    className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${formData.isRemote ? "translate-x-5" : "translate-x-0"
+                                        }`}
                                 />
                             </button>
                         </div>
@@ -505,7 +518,7 @@ export default function NewJobPage() {
                         <Send className="mr-2 size-4" />
                         {isSubmitting ? "Publishing Job..." : "Publish Job"}
                     </Button>
-                    
+
                 </div>
             </form>
         </div>

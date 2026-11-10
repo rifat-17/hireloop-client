@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
     ChevronRight,
@@ -27,116 +27,16 @@ import type {
     JobFormData,
     SalaryFrequency,
 } from "@/app/dashboard/recruiter/jobs/new/page";
+import { getJobs } from "@/lib/api/jobs";
+import { DeleteJobDialog } from "@/components/dashboard/DeleteJobDialog";
 
 export interface JobListing extends JobFormData {
-    id: string;
-    status: "Active" | "Expired" | "Draft";
-    applicantsCount: number;
+    _id: string;
+    
     postedDate: string;
 }
 
-const DUMMY_JOBS: JobListing[] = [
-    {
-        id: "job-1",
-        title: "Frontend Developer",
-        companyName: "HirePulse Network",
-        category: "Engineering & Tech",
-        jobType: "Full-time",
-        isRemote: true,
-        location: "New York, USA",
-        deadline: "2025-05-30",
-        minSalary: "40",
-        maxSalary: "55",
-        salaryFrequency: "per hour",
-        responsibilities:
-            "Deliver exceptional UI experiences and collaborate with system designers to craft micro-interactions.",
-        requirements:
-            "3+ years of experience with React, TypeScript, and modern state architectures.",
-        status: "Active",
-        applicantsCount: 34,
-        postedDate: "Posted 4d ago",
-    },
-    {
-        id: "job-2",
-        title: "Senior Product Designer",
-        companyName: "HirePulse Labs",
-        category: "Design & Creative",
-        jobType: "Full-time",
-        isRemote: false,
-        location: "London, UK (Hybrid)",
-        deadline: "2025-06-15",
-        minSalary: "90000",
-        maxSalary: "115000",
-        salaryFrequency: "per year",
-        responsibilities:
-            "Lead end-to-end design across mobile and desktop interfaces, crafting scalable design tokens.",
-        requirements:
-            "5+ years of experience in Figma, design systems, and rapid prototyping.",
-        status: "Active",
-        applicantsCount: 19,
-        postedDate: "Posted 1w ago",
-    },
-    {
-        id: "job-3",
-        title: "DevOps Specialist",
-        companyName: "HirePulse Platform",
-        category: "Engineering & Tech",
-        jobType: "Full-time",
-        isRemote: false,
-        location: "Berlin, Germany",
-        deadline: "2025-06-30",
-        minSalary: "95000",
-        maxSalary: "120000",
-        salaryFrequency: "per year",
-        responsibilities:
-            "Automate CI/CD pipelines, manage Kubernetes clusters, and optimize cloud infrastructure.",
-        requirements:
-            "Kubernetes, Docker, Terraform, AWS/GCP, and monitoring tools.",
-        status: "Active",
-        applicantsCount: 12,
-        postedDate: "Posted 2w ago",
-    },
-    {
-        id: "job-4",
-        title: "Product Marketing Lead",
-        companyName: "HirePulse Network",
-        category: "Marketing & Sales",
-        jobType: "Full-time",
-        isRemote: true,
-        location: "Remote (EU/US)",
-        deadline: "2025-07-10",
-        minSalary: "85000",
-        maxSalary: "105000",
-        salaryFrequency: "per year",
-        responsibilities:
-            "Drive go-to-market strategies, campaign execution, and user acquisition pipelines.",
-        requirements:
-            "Proven track record in B2B SaaS growth and successful product launches.",
-        status: "Active",
-        applicantsCount: 27,
-        postedDate: "Posted 3w ago",
-    },
-    {
-        id: "job-5",
-        title: "QA Automation Engineer",
-        companyName: "HirePulse Network",
-        category: "Engineering & Tech",
-        jobType: "Part-time",
-        isRemote: false,
-        location: "Dublin, Ireland (Hybrid)",
-        deadline: "2025-05-01",
-        minSalary: "50",
-        maxSalary: "65",
-        salaryFrequency: "per hour",
-        responsibilities:
-            "Build robust automated test suites with Playwright, Jest, and integration test runners.",
-        requirements:
-            "2+ years automation experience, API testing, and CI pipeline integrations.",
-        status: "Expired",
-        applicantsCount: 8,
-        postedDate: "Closed",
-    },
-];
+
 
 function formatSalary(
     min: string,
@@ -173,9 +73,34 @@ function formatDate(dateStr: string): string {
 }
 
 export default function ManageJobsPage() {
-    const [jobs, setJobs] = useState<JobListing[]>(DUMMY_JOBS);
+    const [jobs, setJobs] = useState<JobListing[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Expired">("All");
+
+    useEffect(() => {
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+
+            const jobs = await getJobs();
+
+            setJobs(jobs);
+        } catch (error) {
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Something went wrong"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchJobs();
+}, []);
 
     const filteredJobs = useMemo(() => {
         return jobs.filter((job) => {
@@ -192,9 +117,11 @@ export default function ManageJobsPage() {
         });
     }, [jobs, searchQuery, statusFilter]);
 
-    const handleDelete = (id: string) => {
-        setJobs((prev) => prev.filter((j) => j.id !== id));
-    };
+const handleJobDeleted = (jobId: string) => {
+    setJobs((prevJobs) =>
+        prevJobs.filter((job) => job._id !== jobId)
+    );
+};
 
     const activeCount = jobs.filter((j) => j.status === "Active").length;
     const expiredCount = jobs.filter((j) => j.status === "Expired").length;
@@ -316,7 +243,7 @@ export default function ManageJobsPage() {
                         ) : (
                             filteredJobs.map((job) => (
                                 <TableRow
-                                    key={job.id}
+                                    key={job._id}
                                     className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
                                 >
                                     {/* Job Title & Dept */}
@@ -393,7 +320,7 @@ export default function ManageJobsPage() {
                                             {job.status}
                                         </span>
                                     </TableCell>
-
+                                    
                                     {/* Deadline */}
                                     <TableCell>
                                         <div>
@@ -407,6 +334,7 @@ export default function ManageJobsPage() {
                                     </TableCell>
 
                                     {/* Actions */}
+
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <Link
@@ -416,14 +344,7 @@ export default function ManageJobsPage() {
                                             >
                                                 <ExternalLink className="size-4" />
                                             </Link>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(job.id)}
-                                                className="rounded-lg p-2 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400"
-                                                title="Delete posting"
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </button>
+                                            <DeleteJobDialog job={job} onDeleted={handleJobDeleted} />
                                         </div>
                                     </TableCell>
                                 </TableRow>
