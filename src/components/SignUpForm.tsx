@@ -1,21 +1,15 @@
-
 "use client";
 
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ChangeEvent } from "react";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { PasswordInput } from "@/components/ui/password-input";
+import { USER_ROLES } from "@/constants";
+import type { SignUpFormData } from "@/types";
 
-type SignUpFormData = {
-    fullName: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    role: "seeker" | "recruiter" | "admin";
-    acceptTerms: boolean;
-};
-
-const ROLES = ["seeker", "recruiter", "admin"] as const;
+export type { SignUpFormData };
 
 const initialFormData: SignUpFormData = {
     fullName: "",
@@ -27,14 +21,10 @@ const initialFormData: SignUpFormData = {
 };
 
 export function SignUpForm() {
-
-      const router = useRouter()
+    const router = useRouter();
 
     const [formData, setFormData] =
         useState<SignUpFormData>(initialFormData);
-
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -109,28 +99,14 @@ export function SignUpForm() {
     const labelClass = "mb-2 block text-sm font-medium text-gray-300";
 
     return (
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101014] p-6 shadow-2xl shadow-violet-950/10 sm:p-8">
-
-            {/* Heading */}
-            <div className="mb-8 text-center">
-                <Link
-                    href="/"
-                    className="mb-6 inline-block text-2xl font-bold tracking-tight text-white"
-                >
-                    Hire<span className="text-violet-500">loop.</span>
-                </Link>
-
-                <h1 className="text-2xl font-semibold text-white">
-                    Create your account
-                </h1>
-
-                <p className="mt-2 text-sm text-gray-400">
-                    Start your journey with Hireloop today.
-                </p>
-            </div>
-
+        <AuthCard
+            title="Create your account"
+            subtitle="Start your journey with Hireloop today."
+            footerText="Already have an account?"
+            footerLinkText="Log In"
+            footerLinkHref="/login"
+        >
             <form onSubmit={handleSignUp} className="space-y-5">
-
                 {/* Full Name */}
                 <div>
                     <label htmlFor="fullName" className={labelClass}>
@@ -176,7 +152,7 @@ export function SignUpForm() {
                     </span>
 
                     <div className="grid grid-cols-3 gap-2">
-                        {ROLES.map((role) => (
+                        {USER_ROLES.map((role) => (
                             <label
                                 key={role}
                                 className="flex cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-white/5 py-3 text-sm capitalize text-gray-400 transition has-[:checked]:border-violet-500 has-[:checked]:bg-violet-500/10 has-[:checked]:text-white"
@@ -201,28 +177,16 @@ export function SignUpForm() {
                         Password
                     </label>
 
-                    <div className="relative">
-                        <input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={`${inputClass} pr-16`}
-                            autoComplete="new-password"
-                            minLength={8}
-                            required
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-violet-400"
-                        >
-                            {showPassword ? "Hide" : "Show"}
-                        </button>
-                    </div>
+                    <PasswordInput
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                    />
                 </div>
 
                 {/* Confirm Password */}
@@ -231,30 +195,16 @@ export function SignUpForm() {
                         Confirm Password
                     </label>
 
-                    <div className="relative">
-                        <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm your password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className={`${inputClass} pr-16`}
-                            autoComplete="new-password"
-                            minLength={8}
-                            required
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-violet-400"
-                        >
-                            {showConfirmPassword ? "Hide" : "Show"}
-                        </button>
-                    </div>
+                    <PasswordInput
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                    />
                 </div>
 
                 {/* Terms */}
@@ -301,17 +251,6 @@ export function SignUpForm() {
                     {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
             </form>
-
-            {/* Sign In Link */}
-            <p className="mt-7 text-center text-sm text-gray-400">
-                Already have an account?{" "}
-                <Link
-                    href="/login"
-                    className="font-semibold text-violet-400 hover:text-violet-300"
-                >
-                    Log In
-                </Link>
-            </p>
-        </div>
+        </AuthCard>
     );
 }

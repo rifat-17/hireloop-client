@@ -3,15 +3,14 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
-    ChevronRight,
     Plus,
     Search,
     MapPin,
     Users,
-    Trash2,
     ExternalLink,
     Building2,
     Briefcase,
+    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,54 +22,16 @@ import {
     TableRow,
     TableCell,
 } from "@/components/ui/table";
-import type {
-    JobFormData,
-    SalaryFrequency,
-} from "@/app/dashboard/recruiter/jobs/new/page";
-import { getJobs } from "@/lib/api/jobs";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import { DeleteJobDialog } from "@/components/dashboard/DeleteJobDialog";
+import { getJobs } from "@/lib/api/jobs";
+import { formatSalary, formatDate } from "@/lib/formatters";
+import type { JobListing } from "@/types";
 
-export interface JobListing extends JobFormData {
-    _id: string;
-    
-    postedDate: string;
-}
+export type { JobListing };
 
-
-
-function formatSalary(
-    min: string,
-    max: string,
-    freq: SalaryFrequency
-): string {
-    const formatNum = (val: string) => {
-        const n = Number(val);
-        if (isNaN(n) || n === 0) return val;
-        if (n >= 1000) return `${Math.round(n / 1000)}k`;
-        return `${n}`;
-    };
-
-    const freqLabel =
-        freq === "per hour" ? "/ hr" : freq === "per month" ? "/ mo" : "/ yr";
-    if (min && max) {
-        return `$${formatNum(min)} - $${formatNum(max)} ${freqLabel}`;
-    }
-    if (min) {
-        return `$${formatNum(min)} ${freqLabel}`;
-    }
-    return "Competitive";
-}
-
-function formatDate(dateStr: string): string {
-    if (!dateStr) return "-";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-    });
-}
+type StatusFilter = "All" | "Active" | "Expired";
 
 export default function ManageJobsPage() {
     const [jobs, setJobs] = useState<JobListing[]>([]);
@@ -78,37 +39,35 @@ export default function ManageJobsPage() {
     const [error, setError] = useState("");
 
     const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Expired">("All");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
 
     useEffect(() => {
-    const fetchJobs = async () => {
-        try {
-            setLoading(true);
+        const fetchJobs = async () => {
+            try {
+                setLoading(true);
+                setError("");
+                const data = await getJobs();
+                setJobs(data || []);
+            } catch (err) {
+                setError(
+                    err instanceof Error ? err.message : "Something went wrong"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
 
-            const jobs = await getJobs();
-
-            setJobs(jobs);
-        } catch (error) {
-            setError(
-                error instanceof Error
-                    ? error.message
-                    : "Something went wrong"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchJobs();
-}, []);
+        fetchJobs();
+    }, []);
 
     const filteredJobs = useMemo(() => {
         return jobs.filter((job) => {
+            const query = searchQuery.toLowerCase();
             const matchesQuery =
-                job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                job.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                job.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                job.location.toLowerCase().includes(searchQuery.toLowerCase());
+                job.title?.toLowerCase().includes(query) ||
+                job.companyName?.toLowerCase().includes(query) ||
+                job.category?.toLowerCase().includes(query) ||
+                job.location?.toLowerCase().includes(query);
 
             const matchesStatus =
                 statusFilter === "All" ? true : job.status === statusFilter;
@@ -117,11 +76,9 @@ export default function ManageJobsPage() {
         });
     }, [jobs, searchQuery, statusFilter]);
 
-const handleJobDeleted = (jobId: string) => {
-    setJobs((prevJobs) =>
-        prevJobs.filter((job) => job._id !== jobId)
-    );
-};
+    const handleJobDeleted = (jobId: string) => {
+        setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
+    };
 
     const activeCount = jobs.filter((j) => j.status === "Active").length;
     const expiredCount = jobs.filter((j) => j.status === "Expired").length;
@@ -129,38 +86,33 @@ const handleJobDeleted = (jobId: string) => {
     return (
         <div className="mx-auto max-w-7xl space-y-8 pb-16">
             {/* Top Breadcrumb & Page Headings */}
-            <div>
-                <nav className="mb-2 flex items-center gap-2 text-sm text-gray-400">
-                    <span className="text-gray-400">Manage Jobs</span>
-                    <ChevronRight className="size-4 text-gray-600" />
-                    <span className="font-medium text-gray-200">
-                        Job Listings &amp; Postings
-                    </span>
-                </nav>
-
-                <div className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                            Manage Job Posts
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-400">
-                            Review live listings, monitor applicants, and update job details across your organization.
-                        </p>
-                    </div>
-
+            <PageHeader
+                title="Manage Job Posts"
+                description="Review live listings, monitor applicants, and update job details across your organization."
+                breadcrumbs={[
+                    { label: "Manage Jobs" },
+                    { label: "Job Listings & Postings" },
+                ]}
+                actions={
                     <Link href="/dashboard/recruiter/jobs/new">
                         <Button className="h-11 rounded-xl bg-violet-600 px-6 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-500">
                             <Plus className="mr-2 size-4" />
                             + New Job Post
                         </Button>
                     </Link>
+                }
+            />
+
+            {error && (
+                <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                    {error}
                 </div>
-            </div>
+            )}
 
             {/* Filter & Search Bar */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="relative w-full max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-gray-500" />
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-gray-500" />
                     <Input
                         type="text"
                         value={searchQuery}
@@ -176,25 +128,27 @@ const handleJobDeleted = (jobId: string) => {
                             filter === "All"
                                 ? jobs.length
                                 : filter === "Active"
-                                    ? activeCount
-                                    : expiredCount;
+                                ? activeCount
+                                : expiredCount;
                         const isSelected = statusFilter === filter;
                         return (
                             <button
                                 key={filter}
                                 type="button"
                                 onClick={() => setStatusFilter(filter)}
-                                className={`flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-medium transition ${isSelected
-                                    ? "bg-violet-600 text-white shadow-sm shadow-violet-600/30"
-                                    : "border border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                    }`}
+                                className={`flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-medium transition ${
+                                    isSelected
+                                        ? "bg-violet-600 text-white shadow-sm shadow-violet-600/30"
+                                        : "border border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
+                                }`}
                             >
                                 <span>{filter}</span>
                                 <span
-                                    className={`rounded-full px-1.5 py-0.2 text-[10px] ${isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-white/10 text-gray-400"
-                                        }`}
+                                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                                        isSelected
+                                            ? "bg-white/20 text-white"
+                                            : "bg-white/10 text-gray-400"
+                                    }`}
                                 >
                                     {count}
                                 </span>
@@ -205,7 +159,7 @@ const handleJobDeleted = (jobId: string) => {
             </div>
 
             {/* Responsive Table Card */}
-            <div className="rounded-2xl border border-white/10 bg-[#101014] shadow-xl shadow-black/20">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#101014] shadow-xl shadow-black/20">
                 <Table>
                     <TableHeader className="bg-white/[0.02]">
                         <TableRow className="border-b border-white/10 hover:bg-transparent">
@@ -231,7 +185,19 @@ const handleJobDeleted = (jobId: string) => {
                     </TableHeader>
 
                     <TableBody>
-                        {filteredJobs.length === 0 ? (
+                        {loading ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={8}
+                                    className="h-36 text-center text-gray-400"
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Loader2 className="size-5 animate-spin text-violet-400" />
+                                        <span>Loading job postings...</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredJobs.length === 0 ? (
                             <TableRow>
                                 <TableCell
                                     colSpan={8}
@@ -311,16 +277,9 @@ const handleJobDeleted = (jobId: string) => {
 
                                     {/* Status */}
                                     <TableCell>
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${job.status === "Active"
-                                                ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                                                : "border border-amber-500/20 bg-amber-500/10 text-amber-400"
-                                                }`}
-                                        >
-                                            {job.status}
-                                        </span>
+                                        <StatusBadge status={job.status} />
                                     </TableCell>
-                                    
+
                                     {/* Deadline */}
                                     <TableCell>
                                         <div>
@@ -334,7 +293,6 @@ const handleJobDeleted = (jobId: string) => {
                                     </TableCell>
 
                                     {/* Actions */}
-
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <Link
@@ -344,7 +302,10 @@ const handleJobDeleted = (jobId: string) => {
                                             >
                                                 <ExternalLink className="size-4" />
                                             </Link>
-                                            <DeleteJobDialog job={job} onDeleted={handleJobDeleted} />
+                                            <DeleteJobDialog
+                                                job={job}
+                                                onDeleted={handleJobDeleted}
+                                            />
                                         </div>
                                     </TableCell>
                                 </TableRow>

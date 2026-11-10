@@ -10,7 +10,6 @@ import {
     Building2,
     Users,
     Settings,
-    type LucideIcon,
     PlusCircle,
 } from "lucide-react";
 import {
@@ -24,15 +23,9 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSession } from "@/lib/auth-client";
+import type { MenuItem, Role } from "@/types";
 
-export type Role = "seeker" | "recruiter" | "admin";
-
-export interface MenuItem {
-    id: string;
-    name: string;
-    url: string;
-    icon: LucideIcon;
-}
+export type { Role, MenuItem };
 
 export const menuItemsByRole: Record<Role, MenuItem[]> = {
     seeker: [

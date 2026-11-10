@@ -1,15 +1,13 @@
-
 "use client";
 
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useState, type FormEvent, type ChangeEvent } from "react";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { PasswordInput } from "@/components/ui/password-input";
+import type { SignInFormData } from "@/types";
 
-type SignInFormData = {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-};
+export type { SignInFormData };
 
 const initialFormData: SignInFormData = {
     email: "",
@@ -21,7 +19,6 @@ export function SignInForm() {
     const [formData, setFormData] =
         useState<SignInFormData>(initialFormData);
 
-    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -73,28 +70,14 @@ export function SignInForm() {
     const labelClass = "mb-2 block text-sm font-medium text-gray-300";
 
     return (
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101014] p-6 shadow-2xl shadow-violet-950/10 sm:p-8">
-
-            {/* Heading */}
-            <div className="mb-8 text-center">
-                <Link
-                    href="/"
-                    className="mb-6 inline-block text-2xl font-bold tracking-tight text-white"
-                >
-                    Hire<span className="text-violet-500">loop.</span>
-                </Link>
-
-                <h1 className="text-2xl font-semibold text-white">
-                    Welcome Back
-                </h1>
-
-                <p className="mt-2 text-sm text-gray-400">
-                    Sign in to continue to your account.
-                </p>
-            </div>
-
+        <AuthCard
+            title="Welcome Back"
+            subtitle="Sign in to continue to your account."
+            footerText="Don't have an account?"
+            footerLinkText="Create an account"
+            footerLinkHref="/register"
+        >
             <form onSubmit={handleSignIn} className="space-y-5">
-
                 {/* Email */}
                 <div>
                     <label htmlFor="email" className={labelClass}>
@@ -120,27 +103,15 @@ export function SignInForm() {
                         Password
                     </label>
 
-                    <div className="relative">
-                        <input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={`${inputClass} pr-16`}
-                            autoComplete="current-password"
-                            required
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-violet-400"
-                        >
-                            {showPassword ? "Hide" : "Show"}
-                        </button>
-                    </div>
+                    <PasswordInput
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        autoComplete="current-password"
+                        required
+                    />
                 </div>
 
                 {/* Remember Me and Forgot Password */}
@@ -180,17 +151,6 @@ export function SignInForm() {
                     {isLoading ? "Signing In..." : "Log In"}
                 </button>
             </form>
-
-            {/* Sign Up Link */}
-            <p className="mt-7 text-center text-sm text-gray-400">
-                Don't have an account?{" "}
-                <Link
-                    href="register"
-                    className="font-semibold text-violet-400 hover:text-violet-300"
-                >
-                    Create an account
-                </Link>
-            </p>
-        </div>
+        </AuthCard>
     );
 }

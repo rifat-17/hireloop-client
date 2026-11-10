@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
-import type { JobListing } from "@/app/dashboard/recruiter/jobs/page";
+import type { JobListing } from "@/types";
 import { deleteJob } from "@/lib/actions/jobs";
 
 interface DeleteJobDialogProps {
