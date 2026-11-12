@@ -38,7 +38,7 @@ export const menuItemsByRole: Record<Role, MenuItem[]> = {
         {
             id: "seeker-jobs",
             name: "Jobs",
-            url: "/jobs",
+            url: "/browse-jobs",
             icon: Briefcase,
         },
         {

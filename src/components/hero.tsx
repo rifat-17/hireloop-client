@@ -51,7 +51,7 @@ export function Hero() {
         </p>
 
         <form
-          action="/jobs"
+          action="/browse-jobs"
           className="mt-8 flex w-full flex-col gap-2 rounded-2xl border border-white/20 bg-[#101010] p-2 text-left transition-colors focus-within:border-white/40 sm:mt-12 sm:h-16 sm:flex-row sm:items-center sm:gap-0 sm:pl-6 sm:pr-2"
         >
           <label className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 sm:px-0 sm:py-0">
@@ -97,7 +97,7 @@ export function Hero() {
             {trendingPositions.map((position) => (
               <Link
                 key={position}
-                href={`/jobs?q=${encodeURIComponent(position)}`}
+                href={`/browse-jobs?q=${encodeURIComponent(position)}`}
                 className="rounded-full border border-white/10 bg-[#1a1a1b] px-4 py-2 text-sm text-white/90 transition-colors hover:border-white/20 hover:bg-white/10"
               >
                 {position}
