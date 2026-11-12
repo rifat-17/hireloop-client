@@ -6,6 +6,7 @@ import { useState, type FormEvent, type ChangeEvent } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { PasswordInput } from "@/components/ui/password-input";
 import type { SignInFormData } from "@/types";
+import { useSearchParams } from "next/navigation";
 
 export type { SignInFormData };
 
@@ -22,6 +23,9 @@ export function SignInForm() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get("redirectTo") || "/";
+
     // Handle input changes
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -34,6 +38,9 @@ export function SignInForm() {
 
     // Handle Sign In
     const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
+
+
+
         e.preventDefault();
 
         setError("");
@@ -44,7 +51,7 @@ export function SignInForm() {
                 email: formData.email,
                 password: formData.password,
                 rememberMe: formData.rememberMe,
-                callbackURL: "/",
+                callbackURL: redirectTo,
             });
 
             if (error) {

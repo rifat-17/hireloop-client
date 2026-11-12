@@ -17,6 +17,9 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatSalary } from "@/lib/formatters";
 import type { JobListing } from "@/types";
+import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { applyToAJob } from "@/lib/actions/applications";
 
 interface JobDetailHeaderProps {
     job: JobListing;
@@ -26,11 +29,44 @@ interface JobDetailHeaderProps {
 
 export function JobDetailHeader({
     job,
-    onApply = () => {},
-    onSave = () => {},
+    onApply = () => { },
+    onSave = () => { },
 }: JobDetailHeaderProps) {
     const [copied, setCopied] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+
+    const { data: session } = useSession();
+    const user = session?.user;
+
+    const router = useRouter();
+
+    const handleApplyNow = async() => {
+        if (!user) {
+            router.push(`/login/?redirectTo=/browse-jobs/${job._id}`);
+            return
+        }
+        else if ( user.role === 'seeker'){
+            // console.log("aise?")
+            //TODO: only send the jobId and userId or email address for the application
+            const application = {
+                jobId: job._id,
+                userId: user.id,
+                email: user.email,
+                jobTitle: job.title,
+                companyName: job.companyName,
+            }
+
+            const result = await applyToAJob(application);
+            if(result.insertedId) {
+                console.log("hehe application submitted")
+                router.push('/browse-jobs')
+            }
+            
+        }
+        else {
+            console.log('user is not a job seeker')
+        }
+    }
 
     const handleShare = () => {
         if (typeof window !== "undefined") {
@@ -121,17 +157,15 @@ export function JobDetailHeader({
                             type="button"
                             variant="outline"
                             onClick={handleSaveToggle}
-                            className={`h-11 rounded-xl border-white/10 bg-white/5 px-4 text-xs font-medium transition ${
-                                isSaved
+                            className={`h-11 rounded-xl border-white/10 bg-white/5 px-4 text-xs font-medium transition ${isSaved
                                     ? "border-violet-500/40 bg-violet-600/20 text-violet-300"
                                     : "text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white"
-                            }`}
+                                }`}
                             aria-label="Save this job"
                         >
                             <Bookmark
-                                className={`mr-2 size-4 ${
-                                    isSaved ? "fill-violet-400 text-violet-400" : ""
-                                }`}
+                                className={`mr-2 size-4 ${isSaved ? "fill-violet-400 text-violet-400" : ""
+                                    }`}
                             />
                             {isSaved ? "Saved" : "Save Job"}
                         </Button>
@@ -158,7 +192,7 @@ export function JobDetailHeader({
 
                         <Button
                             type="button"
-                            onClick={onApply}
+                            onClick={handleApplyNow}
                             className="h-11 rounded-xl bg-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-500 active:scale-[0.99]"
                         >
                             <Send className="mr-2 size-4" />
