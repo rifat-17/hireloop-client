@@ -15,13 +15,6 @@ export default async function BrowseJobsPage({
     const urlSearch = new URLSearchParams(search as Record<string, string>);
     const query = urlSearch.toString();
 
-    const selectedCategory =
-        typeof search?.category === "string" ? search.category : undefined;
-    const selectedJobType =
-        typeof search?.jobType === "string"
-            ? (search.jobType as JobListing["jobType"])
-            : undefined;
-
     let jobs: JobListing[] = [];
     try {
         const result = await getJobs(query);
@@ -60,10 +53,7 @@ export default async function BrowseJobsPage({
                     {/* Left Column: Filter Sidebar */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-20">
-                            <JobFilterSidebar
-                                selectedCategory={selectedCategory}
-                                selectedJobType={selectedJobType}
-                            />
+                            <JobFilterSidebar />
                         </div>
                     </div>
 

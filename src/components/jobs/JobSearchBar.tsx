@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Search, MapPin } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface JobSearchBarProps {
     defaultValue?: string;
@@ -15,15 +16,29 @@ interface JobSearchBarProps {
 
 export function JobSearchBar({
     defaultValue = "",
-    defaultLocation = "",
     onSearch = () => {},
     onKeywordChange = () => {},
-    onLocationChange = () => {},
     className = "",
 }: JobSearchBarProps) {
+
+    const router = useRouter();
+
     const handleSubmit = (e: React.FormEvent) => {
+
         e.preventDefault();
         onSearch();
+
+        const formData = new FormData(e.currentTarget as HTMLFormElement);
+        const data = Object.fromEntries(formData.entries());
+        console.log(data);
+        
+        const search = data.searchField;
+
+        const params = new URLSearchParams();
+        params.set("search", search as string);
+        router.push(`/browse-jobs?${params.toString()}`);
+
+
     };
 
     return (
@@ -40,7 +55,7 @@ export function JobSearchBar({
                     />
                     <input
                         type="text"
-                        name="q"
+                        name="searchField"
                         defaultValue={defaultValue}
                         onChange={(e) => onKeywordChange(e.target.value)}
                         placeholder="Job title, keywords, or company..."
@@ -55,7 +70,7 @@ export function JobSearchBar({
                 />
 
                 {/* Location Input */}
-                <div className="relative flex flex-1 items-center">
+                {/* <div className="relative flex flex-1 items-center">
                     <MapPin
                         className="pointer-events-none absolute left-4 size-5 text-gray-400"
                         aria-hidden="true"
@@ -68,7 +83,7 @@ export function JobSearchBar({
                         placeholder="Location or 'Remote'..."
                         className="h-12 w-full rounded-xl bg-transparent pl-12 pr-4 text-sm text-white outline-none placeholder:text-gray-500 transition-colors focus:bg-white/[0.03] sm:h-14 sm:text-base"
                     />
-                </div>
+                </div> */}
 
                 {/* Submit Button */}
                 <Button

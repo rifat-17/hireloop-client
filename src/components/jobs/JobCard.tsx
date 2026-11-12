@@ -30,9 +30,11 @@ export function JobCard({ job, className = "" }: JobCardProps) {
                             <Building2 className="size-5" />
                         </div>
                         <div>
-                            <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-violet-300 transition-colors">
-                                {job.title}
-                            </h3>
+                            <Link href={`/browse-jobs/${job._id || ""}`}>
+                                <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-violet-300 transition-colors">
+                                    {job.title}
+                                </h3>
+                            </Link>
                             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
                                 <span className="font-medium text-gray-300">
                                     {job.companyName}
@@ -44,7 +46,7 @@ export function JobCard({ job, className = "" }: JobCardProps) {
                     </div>
 
                     <Link
-                        href={`/jobs/${job._id || ""}`}
+                        href={`/browse-jobs/${job._id || ""}`}
                         className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-400 transition hover:border-violet-500/40 hover:bg-violet-600 hover:text-white"
                         aria-label={`View details for ${job.title}`}
                     >

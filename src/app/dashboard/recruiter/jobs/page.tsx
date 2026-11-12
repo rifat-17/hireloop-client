@@ -296,7 +296,7 @@ export default function ManageJobsPage() {
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <Link
-                                                href={`/jobs`}
+                                                href={`/browse-jobs/${job._id}`}
                                                 className="rounded-lg p-2 text-gray-400 transition hover:bg-white/5 hover:text-white"
                                                 title="View public job"
                                             >

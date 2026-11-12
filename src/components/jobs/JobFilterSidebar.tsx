@@ -1,106 +1,103 @@
+
 "use client";
 
-import React, { useState } from "react";
 import {
     SlidersHorizontal,
     RotateCcw,
     Briefcase,
-    DollarSign,
     Globe,
     Layers,
 } from "lucide-react";
+
 import {
     JOB_CATEGORIES,
     JOB_TYPES,
-    SALARY_FREQUENCIES,
 } from "@/constants";
-import type { JobType, SalaryFrequency } from "@/types";
+
+import type { JobType } from "@/types";
+
+import {
+    usePathname,
+    useRouter,
+    useSearchParams,
+} from "next/navigation";
 
 interface JobFilterSidebarProps {
-    selectedCategory?: string;
-    selectedJobType?: JobType | "";
-    /** Kept for backward compatibility */
-    selectedJobTypes?: JobType[];
-    isRemoteOnly?: boolean;
-    selectedFrequency?: SalaryFrequency | "";
-    onCategoryChange?: (category: string) => void;
-    onJobTypeChange?: (jobType: JobType | "") => void;
-    onRemoteChange?: (isRemote: boolean) => void;
-    onFrequencyChange?: (frequency: SalaryFrequency | "") => void;
-    onResetFilters?: () => void;
     className?: string;
+    onResetFilters?: () => void;
 }
 
 export function JobFilterSidebar({
-    selectedCategory: controlledCategory,
-    selectedJobType: controlledJobType,
-    selectedJobTypes,
-    isRemoteOnly: controlledRemote,
-    selectedFrequency: controlledFrequency,
-    onCategoryChange = () => {},
-    onJobTypeChange = () => {},
-    onRemoteChange = () => {},
-    onFrequencyChange = () => {},
-    onResetFilters = () => {},
     className = "",
+    onResetFilters,
 }: JobFilterSidebarProps) {
-    // Support both controlled and uncontrolled usage
-    const [internalCategory, setInternalCategory] = useState<string>("");
-    const [internalJobType, setInternalJobType] = useState<JobType | "">("");
-    const [internalRemote, setInternalRemote] = useState<boolean>(false);
-    const [internalFrequency, setInternalFrequency] = useState<SalaryFrequency | "">("");
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-    // Resolve active values (controlled props take precedence if defined)
-    const activeCategory =
-        controlledCategory !== undefined ? controlledCategory : internalCategory;
+    // Get active filters from URL
+    const activeCategory = searchParams.get("category") || "";
+
     const activeJobType =
-        controlledJobType !== undefined
-            ? controlledJobType
-            : selectedJobTypes && selectedJobTypes.length > 0
-            ? selectedJobTypes[0]
-            : internalJobType;
-    const activeRemote =
-        controlledRemote !== undefined ? controlledRemote : internalRemote;
-    const activeFrequency =
-        controlledFrequency !== undefined ? controlledFrequency : internalFrequency;
+        (searchParams.get("jobType") as JobType | "") || "";
 
+    const activeRemote = searchParams.get("isRemote") === "true";
+
+    // Reusable function to update URL parameters
+    const updateFilter = (name: string, value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (value) {
+            params.set(name, value);
+        } else {
+            params.delete(name);
+        }
+
+        const queryString = params.toString();
+
+        router.replace(
+            queryString ? `${pathname}?${queryString}` : pathname,
+            { scroll: false }
+        );
+    };
+
+    // Category filter
     const handleCategorySelect = (category: string) => {
-        const next = activeCategory === category ? "" : category;
-        if (controlledCategory === undefined) {
-            setInternalCategory(next);
-        }
-        onCategoryChange(next);
+        const nextValue =
+            activeCategory === category ? "" : category;
+
+        updateFilter("category", nextValue);
     };
 
+    // Job type filter
     const handleJobTypeSelect = (type: JobType) => {
-        const next = activeJobType === type ? "" : type;
-        if (controlledJobType === undefined) {
-            setInternalJobType(next);
-        }
-        onJobTypeChange(next);
+        const nextValue =
+            activeJobType === type ? "" : type;
+
+        updateFilter("jobType", nextValue);
     };
 
+    // Remote filter
     const handleRemoteToggle = (checked: boolean) => {
-        if (controlledRemote === undefined) {
-            setInternalRemote(checked);
-        }
-        onRemoteChange(checked);
+        updateFilter("isRemote", checked ? "true" : "");
     };
 
-    const handleFrequencySelect = (freq: SalaryFrequency) => {
-        const next = activeFrequency === freq ? "" : freq;
-        if (controlledFrequency === undefined) {
-            setInternalFrequency(next);
-        }
-        onFrequencyChange(next);
-    };
-
+    // Reset filters while preserving the search keyword
     const handleReset = () => {
-        setInternalCategory("");
-        setInternalJobType("");
-        setInternalRemote(false);
-        setInternalFrequency("");
-        onResetFilters();
+        const params = new URLSearchParams(searchParams.toString());
+
+        params.delete("category");
+        params.delete("jobType");
+        params.delete("isRemote");
+
+        const queryString = params.toString();
+
+        router.replace(
+            queryString ? `${pathname}?${queryString}` : pathname,
+            { scroll: false }
+        );
+
+        onResetFilters?.();
     };
 
     return (
@@ -113,8 +110,12 @@ export function JobFilterSidebar({
                     <div className="flex size-8 items-center justify-center rounded-lg bg-violet-600/10 text-violet-400">
                         <SlidersHorizontal className="size-4" />
                     </div>
-                    <h2 className="text-base font-semibold text-white">Filter Jobs</h2>
+
+                    <h2 className="text-base font-semibold text-white">
+                        Filter Jobs
+                    </h2>
                 </div>
+
                 <button
                     type="button"
                     onClick={handleReset}
@@ -126,37 +127,58 @@ export function JobFilterSidebar({
             </div>
 
             <div className="divide-y divide-white/5">
+
                 {/* Workplace / Remote Type */}
                 <div className="py-5">
                     <div className="mb-3.5 flex items-center gap-2">
                         <Globe className="size-4 text-violet-400" />
-                        <h3 className="text-sm font-medium text-gray-200">Workplace</h3>
+
+                        <h3 className="text-sm font-medium text-gray-200">
+                            Workplace
+                        </h3>
                     </div>
+
                     <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition hover:border-white/10 hover:bg-white/[0.04]">
                         <span className="text-xs font-medium text-gray-300">
                             Remote positions only
                         </span>
+
                         <input
                             type="checkbox"
+                            name="isRemote"
                             checked={activeRemote}
-                            onChange={(e) => handleRemoteToggle(e.target.checked)}
+                            onChange={(e) =>
+                                handleRemoteToggle(e.target.checked)
+                            }
                             className="size-4 rounded border-white/20 bg-white/5 accent-violet-600"
                         />
                     </label>
                 </div>
 
-                {/* Job Types (Single Select) */}
+                {/* Employment Type */}
                 <div className="py-5">
                     <div className="mb-3.5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Briefcase className="size-4 text-violet-400" />
-                            <h3 className="text-sm font-medium text-gray-200">Employment Type</h3>
+
+                            <h3 className="text-sm font-medium text-gray-200">
+                                Employment Type
+                            </h3>
                         </div>
-                        <span className="text-[11px] text-gray-500">Single select</span>
+
+                        <span className="text-[11px] text-gray-500">
+                            Single select
+                        </span>
                     </div>
-                    <div className="space-y-1.5" role="radiogroup" aria-label="Employment Type">
+
+                    <div
+                        className="space-y-1.5"
+                        role="radiogroup"
+                        aria-label="Employment Type"
+                    >
                         {JOB_TYPES.map((type) => {
                             const isSelected = activeJobType === type;
+
                             return (
                                 <label
                                     key={type}
@@ -167,18 +189,15 @@ export function JobFilterSidebar({
                                     }`}
                                 >
                                     <span>{type}</span>
+
                                     <input
                                         type="radio"
-                                        name="jobTypeFilter"
+                                        name="jobType"
                                         value={type}
                                         checked={isSelected}
-                                        onChange={() => handleJobTypeSelect(type)}
-                                        onClick={(e) => {
-                                            if (isSelected) {
-                                                e.preventDefault();
-                                                handleJobTypeSelect(type);
-                                            }
-                                        }}
+                                        onChange={() =>
+                                            handleJobTypeSelect(type)
+                                        }
                                         className="size-4 border-white/20 bg-white/5 accent-violet-600"
                                     />
                                 </label>
@@ -187,18 +206,31 @@ export function JobFilterSidebar({
                     </div>
                 </div>
 
-                {/* Categories (Single Select) */}
+                {/* Categories */}
                 <div className="py-5">
                     <div className="mb-3.5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Layers className="size-4 text-violet-400" />
-                            <h3 className="text-sm font-medium text-gray-200">Category</h3>
+
+                            <h3 className="text-sm font-medium text-gray-200">
+                                Category
+                            </h3>
                         </div>
-                        <span className="text-[11px] text-gray-500">Single select</span>
+
+                        <span className="text-[11px] text-gray-500">
+                            Single select
+                        </span>
                     </div>
-                    <div className="space-y-1.5" role="radiogroup" aria-label="Job Category">
+
+                    <div
+                        className="space-y-1.5"
+                        role="radiogroup"
+                        aria-label="Job Category"
+                    >
                         {JOB_CATEGORIES.map((category) => {
-                            const isSelected = activeCategory === category;
+                            const isSelected =
+                                activeCategory === category;
+
                             return (
                                 <label
                                     key={category}
@@ -209,48 +241,18 @@ export function JobFilterSidebar({
                                     }`}
                                 >
                                     <span>{category}</span>
+
                                     <input
                                         type="radio"
-                                        name="categoryFilter"
+                                        name="category"
                                         value={category}
                                         checked={isSelected}
-                                        onChange={() => handleCategorySelect(category)}
-                                        onClick={(e) => {
-                                            if (isSelected) {
-                                                e.preventDefault();
-                                                handleCategorySelect(category);
-                                            }
-                                        }}
+                                        onChange={() =>
+                                            handleCategorySelect(category)
+                                        }
                                         className="size-4 border-white/20 bg-white/5 accent-violet-600"
                                     />
                                 </label>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Salary Frequency */}
-                <div className="py-5">
-                    <div className="mb-3.5 flex items-center gap-2">
-                        <DollarSign className="size-4 text-violet-400" />
-                        <h3 className="text-sm font-medium text-gray-200">Salary Frequency</h3>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                        {SALARY_FREQUENCIES.map((freq) => {
-                            const isSelected = activeFrequency === freq;
-                            return (
-                                <button
-                                    key={freq}
-                                    type="button"
-                                    onClick={() => handleFrequencySelect(freq)}
-                                    className={`rounded-lg border px-2.5 py-2 text-center text-xs font-medium capitalize transition ${
-                                        isSelected
-                                            ? "border-violet-500 bg-violet-600/20 text-white"
-                                            : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                    }`}
-                                >
-                                    {freq.replace("per ", "")}
-                                </button>
                             );
                         })}
                     </div>
