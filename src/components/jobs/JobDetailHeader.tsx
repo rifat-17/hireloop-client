@@ -20,7 +20,7 @@ import { formatSalary } from "@/lib/formatters";
 import type { JobListing, JobApplicationInput } from "@/types";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { applyToAJob } from "@/lib/actions/applications";
+import { applyToAJob, getApplicationsCount } from "@/lib/actions/applications";
 import { toast } from "@/components/ui/toast";
 
 interface JobDetailHeaderProps {
@@ -61,49 +61,64 @@ export function JobDetailHeader({
         setIsApplying(true);
 
         try {
-            const application: JobApplicationInput = {
-                jobId: job._id,
-                userId: user.id,
-                email: user.email,
-                applicantName: user.name || "Job Seeker",
-                jobTitle: job.title,
-                companyName: job.companyName,
-                category: job.category,
-                jobType: job.jobType,
-                location: job.location,
-                isRemote: Boolean(job.isRemote),
-                salary: formatSalary(
-                    job.minSalary,
-                    job.maxSalary,
-                    job.salaryFrequency
-                ),
-                minSalary: job.minSalary,
-                maxSalary: job.maxSalary,
-                salaryFrequency: job.salaryFrequency,
-                deadline: job.deadline,
-                status: "Pending",
-                appliedDate: new Date().toISOString(),
-            };
 
-            const result = await applyToAJob(application);
+            // number of jobs applied by this user,
 
-            if (result.insertedId || result.acknowledged) {
-                toast.add({
-                    title: "Application Submitted Successfully!",
-                    description: `Your application for ${job.title} at ${job.companyName} has been received.`,
-                    type: "success",
-                });
-                onApply();
-                router.push("/dashboard/seeker/application");
-            } else {
-                toast.add({
-                    title: "Submission Failed",
-                    description:
-                        result.message ||
-                        "Could not submit your application. Please try again.",
-                    type: "error",
-                });
+            const countResult = await getApplicationsCount(`applicantId=${user.id}`);
+            //less more than 10 and not premium user
+            if (countResult.count >= 10) {
+                // redirect to the payment page
+                router.push('/payment');
+                return;
             }
+
+            else {
+                const application: JobApplicationInput = {
+                    jobId: job._id,
+                    userId: user.id,
+                    email: user.email,
+                    applicantName: user.name || "Job Seeker",
+                    jobTitle: job.title,
+                    companyName: job.companyName,
+                    category: job.category,
+                    jobType: job.jobType,
+                    location: job.location,
+                    isRemote: Boolean(job.isRemote),
+                    salary: formatSalary(
+                        job.minSalary,
+                        job.maxSalary,
+                        job.salaryFrequency
+                    ),
+                    minSalary: job.minSalary,
+                    maxSalary: job.maxSalary,
+                    salaryFrequency: job.salaryFrequency,
+                    deadline: job.deadline,
+                    status: "Pending",
+                    appliedDate: new Date().toISOString(),
+                };
+
+                const result = await applyToAJob(application);
+
+                if (result.insertedId || result.acknowledged) {
+                    toast.add({
+                        title: "Application Submitted Successfully!",
+                        description: `Your application for ${job.title} at ${job.companyName} has been received.`,
+                        type: "success",
+                    });
+                    onApply();
+                    router.push("/dashboard/seeker/applications");
+                } else {
+                    toast.add({
+                        title: "Submission Failed",
+                        description:
+                            result.message ||
+                            "Could not submit your application. Please try again.",
+                        type: "error",
+                    });
+                }
+            }
+
+
         } catch (error) {
             console.error("Application error:", error);
             toast.add({
@@ -209,8 +224,8 @@ export function JobDetailHeader({
                             variant="outline"
                             onClick={handleSaveToggle}
                             className={`h-11 rounded-xl border-white/10 bg-white/5 px-4 text-xs font-medium transition ${isSaved
-                                    ? "border-violet-500/40 bg-violet-600/20 text-violet-300"
-                                    : "text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                                ? "border-violet-500/40 bg-violet-600/20 text-violet-300"
+                                : "text-gray-300 hover:border-white/20 hover:bg-white/10 hover:text-white"
                                 }`}
                             aria-label="Save this job"
                         >

@@ -45,12 +45,12 @@ export default function SeekerApplicationsPage() {
 
     // Attempt to load live applications if available; fallback to dummy data
     useEffect(() => {
-        if (!user?.email) {
-            setIsLoading(false);
-            return;
-        }
-
         const loadApplications = async () => {
+            if (!user?.email) {
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 const data = await getMyApplications(user.email);
                 setApplications(data || []);

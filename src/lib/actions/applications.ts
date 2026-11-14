@@ -46,3 +46,11 @@ export async function getMyApplications(
         return [];
     }
 }
+
+
+export const getApplicationsCount = async (query = ""): Promise<{ count: number }> => {
+    const response = await fetch(`${API_URL}/applications/count?${query}`, {
+        cache: "no-store",
+    });
+    return response.json();
+}
