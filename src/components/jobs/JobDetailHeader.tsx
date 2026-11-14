@@ -12,14 +12,16 @@ import {
     Bookmark,
     Share2,
     Check,
+    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatSalary } from "@/lib/formatters";
-import type { JobListing } from "@/types";
+import type { JobListing, JobApplicationInput } from "@/types";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { applyToAJob } from "@/lib/actions/applications";
+import { toast } from "@/components/ui/toast";
 
 interface JobDetailHeaderProps {
     job: JobListing;
@@ -34,39 +36,88 @@ export function JobDetailHeader({
 }: JobDetailHeaderProps) {
     const [copied, setCopied] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [isApplying, setIsApplying] = useState(false);
 
     const { data: session } = useSession();
     const user = session?.user;
 
     const router = useRouter();
 
-    const handleApplyNow = async() => {
+    const handleApplyNow = async () => {
         if (!user) {
             router.push(`/login/?redirectTo=/browse-jobs/${job._id}`);
-            return
+            return;
         }
-        else if ( user.role === 'seeker'){
-            // console.log("aise?")
-            //TODO: only send the jobId and userId or email address for the application
-            const application = {
+
+        if (user.role !== "seeker") {
+            toast.add({
+                title: "Action Not Permitted",
+                description: "Only job seekers can apply for positions.",
+                type: "warning",
+            });
+            return;
+        }
+
+        setIsApplying(true);
+
+        try {
+            const application: JobApplicationInput = {
                 jobId: job._id,
                 userId: user.id,
                 email: user.email,
+                applicantName: user.name || "Job Seeker",
                 jobTitle: job.title,
                 companyName: job.companyName,
-            }
+                category: job.category,
+                jobType: job.jobType,
+                location: job.location,
+                isRemote: Boolean(job.isRemote),
+                salary: formatSalary(
+                    job.minSalary,
+                    job.maxSalary,
+                    job.salaryFrequency
+                ),
+                minSalary: job.minSalary,
+                maxSalary: job.maxSalary,
+                salaryFrequency: job.salaryFrequency,
+                deadline: job.deadline,
+                status: "Pending",
+                appliedDate: new Date().toISOString(),
+            };
 
             const result = await applyToAJob(application);
-            if(result.insertedId) {
-                console.log("hehe application submitted")
-                router.push('/browse-jobs')
+
+            if (result.insertedId || result.acknowledged) {
+                toast.add({
+                    title: "Application Submitted Successfully!",
+                    description: `Your application for ${job.title} at ${job.companyName} has been received.`,
+                    type: "success",
+                });
+                onApply();
+                router.push("/dashboard/seeker/application");
+            } else {
+                toast.add({
+                    title: "Submission Failed",
+                    description:
+                        result.message ||
+                        "Could not submit your application. Please try again.",
+                    type: "error",
+                });
             }
-            
+        } catch (error) {
+            console.error("Application error:", error);
+            toast.add({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Something went wrong. Please try again.",
+                type: "error",
+            });
+        } finally {
+            setIsApplying(false);
         }
-        else {
-            console.log('user is not a job seeker')
-        }
-    }
+    };
 
     const handleShare = () => {
         if (typeof window !== "undefined") {
@@ -193,10 +244,20 @@ export function JobDetailHeader({
                         <Button
                             type="button"
                             onClick={handleApplyNow}
-                            className="h-11 rounded-xl bg-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-500 active:scale-[0.99]"
+                            disabled={isApplying}
+                            className="h-11 rounded-xl bg-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-500 active:scale-[0.99] disabled:opacity-60"
                         >
-                            <Send className="mr-2 size-4" />
-                            Apply Now
+                            {isApplying ? (
+                                <>
+                                    <Loader2 className="mr-2 size-4 animate-spin" />
+                                    Submitting...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="mr-2 size-4" />
+                                    Apply Now
+                                </>
+                            )}
                         </Button>
                     </div>
                 </div>

@@ -50,7 +50,7 @@ export const menuItemsByRole: Record<Role, MenuItem[]> = {
         {
             id: "seeker-applications",
             name: "Applications",
-            url: "/dashboard/seeker/applications",
+            url: "/dashboard/seeker/application",
             icon: FileText,
         },
         {
