@@ -28,6 +28,7 @@ import { UserStatsCards } from "./UserStatsCards";
 import { toast } from "@/components/ui/toast";
 import { formatDate } from "@/lib/formatters";
 import type { AppUser, UserRole } from "@/types";
+import { updateUserRole } from "@/lib/actions/users";
 
 interface UsersManagementViewProps {
     initialUsers: AppUser[];
@@ -109,8 +110,22 @@ export function UsersManagementView({ initialUsers }: UsersManagementViewProps) 
 
     // Event handler for toggling / changing user role
     // Requirement: "do not implement role update logic. you may have the event handler. i will implement this later."
-    const handleRoleChange = (userId: string, newRole: UserRole) => {
+    const handleRoleChange = async (userId: string, newRole: UserRole) => {
         // 1. Optimistic / local state update
+
+
+
+
+        // 2. Note: The database update of role update for a user will be implemented later by user.
+        // e.g. await updateUserRole(userId, newRole);
+
+        const res = await updateUserRole(userId, newRole);
+        console.log("after update res", res);
+
+        if(res.modifiedCount > 0) {
+            console.log("after update res again", res);
+        }
+
         setUsers((prev) =>
             prev.map((user) =>
                 user.id === userId ? { ...user, role: newRole } : user
@@ -122,12 +137,9 @@ export function UsersManagementView({ initialUsers }: UsersManagementViewProps) 
 
         toast.add({
             title: "Role Updated",
-            description: `${userName}'s role set to "${newRole}". (Database update deferred)`,
+            description: `${userName}'s role set to "${newRole}".`,
             type: "success",
         });
-
-        // 2. Note: The database update of role update for a user will be implemented later by user.
-        // e.g. await updateUserRole(userId, newRole);
     };
 
     const handleCopyId = (id: string) => {
@@ -220,19 +232,17 @@ export function UsersManagementView({ initialUsers }: UsersManagementViewProps) 
                                     key={tab.value}
                                     type="button"
                                     onClick={() => setRoleFilter(tab.value)}
-                                    className={`flex h-9 items-center gap-2 rounded-xl px-3.5 text-xs font-medium transition ${
-                                        isSelected
+                                    className={`flex h-9 items-center gap-2 rounded-xl px-3.5 text-xs font-medium transition ${isSelected
                                             ? "bg-violet-600 text-white shadow-sm shadow-violet-600/30"
                                             : "border border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                    }`}
+                                        }`}
                                 >
                                     <span>{tab.label}</span>
                                     <span
-                                        className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                                            isSelected
+                                        className={`rounded-full px-1.5 py-0.5 text-[10px] ${isSelected
                                                 ? "bg-white/20 text-white"
                                                 : "bg-white/10 text-gray-400"
-                                        }`}
+                                            }`}
                                     >
                                         {tab.count}
                                     </span>
@@ -402,7 +412,7 @@ export function UsersManagementView({ initialUsers }: UsersManagementViewProps) 
                                                 {formatDate(
                                                     user.createdAt
                                                         ? typeof user.createdAt ===
-                                                          "string"
+                                                            "string"
                                                             ? user.createdAt
                                                             : user.createdAt.toISOString()
                                                         : undefined
