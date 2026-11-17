@@ -113,9 +113,6 @@ export function UsersManagementView({ initialUsers }: UsersManagementViewProps) 
     const handleRoleChange = async (userId: string, newRole: UserRole) => {
         // 1. Optimistic / local state update
 
-
-
-
         // 2. Note: The database update of role update for a user will be implemented later by user.
         // e.g. await updateUserRole(userId, newRole);
 

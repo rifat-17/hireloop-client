@@ -1,50 +1,32 @@
+"use server"
+
 import type {
     JobApplication,
     JobApplicationInput,
     ApplyJobResponse,
 } from "@/types";
+import { authFetch, protectedMutation } from "../core/session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export async function applyToAJob(
     data: JobApplicationInput
 ): Promise<ApplyJobResponse> {
-    try {
-        const response = await fetch(`${API_URL}/applications`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        });
-        return response.json();
-    } catch (error) {
-        console.error("Error applying to job:", error);
-        return {
-            acknowledged: false,
-            message:
-                error instanceof Error
-                    ? error.message
-                    : "Failed to submit application",
-        };
-    }
+
+    const api = `${API_URL}/applications`;
+    const res = await protectedMutation(api, "POST", data);
+    return res.json();
+
 }
 
 export async function getMyApplications(
     email?: string
 ): Promise<JobApplication[]> {
-    try {
-        const query = email ? `?email=${encodeURIComponent(email)}` : "";
-        const response = await fetch(`${API_URL}/applications${query}`, {
-            cache: "no-store",
-        });
-        if (!response.ok) return [];
-        const data = await response.json();
-        return Array.isArray(data) ? data : [];
-    } catch (error) {
-        console.error("Error fetching applications:", error);
-        return [];
-    }
+    const query = email ? `?email=${encodeURIComponent(email)}` : "";
+    const api = `${API_URL}/applications?${query}`
+    const res = await authFetch(api)
+    return res.json()
+
 }
 
 
@@ -95,6 +77,11 @@ export async function updateApplicationStatus(
     applicationId: string,
     status: string
 ): Promise<UpdateStatusResponse> {
+
+    const api = `${API_URL}/applications/${applicationId}`;
+    const res = await protectedMutation(api, "PARCH", applicationId)
+    return res.json();
+
     try {
         const response = await fetch(`${API_URL}/applications/${applicationId}`, {
             method: "PATCH",

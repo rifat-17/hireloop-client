@@ -105,6 +105,7 @@ export function JobDetailHeader({
                 };
 
                 const result = await applyToAJob(application);
+                console.log('job application result ',result);
 
                 if (result.insertedId || result.acknowledged) {
                     toast.add({

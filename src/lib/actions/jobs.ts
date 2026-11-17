@@ -1,16 +1,17 @@
+"use server"
+
 import type { JobFormData, DeleteJobResponse } from "@/types";
+import { protectedMutation } from "../core/session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export const createJob = async (jobData: JobFormData) => {
-    const response = await fetch(`${API_URL}/jobs`, {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
-        },
-        body: JSON.stringify(jobData),
-    });
-    return response.json();
+
+    const api = `${API_URL}/jobs`;
+    const res = await protectedMutation(api, "POST", jobData)
+    return res.json();
+
+   
 };
 
 export const deleteJob = async (jobId: string): Promise<DeleteJobResponse> => {
