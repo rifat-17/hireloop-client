@@ -4,7 +4,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export const getJobs = async (query = ""): Promise<JobListing[]> => {
     try {
-        const response = await fetch(`${API_URL}/jobs?${query}`);
+        const response = await fetch(`${API_URL}/jobs?${query}`,
+            {
+                cache: "no-store",
+            }
+        );
         if (!response.ok) return [];
         return response.json();
     } catch (error) {

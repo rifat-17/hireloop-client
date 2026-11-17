@@ -27,7 +27,16 @@ export const metadata = {
     description: "Unlock unlimited job applications and fast-track your career with HireLoop Pro.",
 };
 
-export default function PaymentPage() {
+export default async function PaymentPage({ searchParams }: { searchParams: Promise<{ canceled?: string }> }) {
+
+    const { canceled } = await searchParams
+
+    if (canceled) {
+        console.log(
+            'Order canceled -- continue to shop around and check out when you\'re ready.'
+        )
+    }
+
     return (
         <main className="min-h-screen bg-[#09090c] pb-24 text-slate-100">
             {/* Top Navigation & Header */}
@@ -72,6 +81,7 @@ export default function PaymentPage() {
                     <div className="lg:col-span-5">
                         <div className="sticky top-20">
                             <PaymentCheckoutBox />
+                            
                         </div>
                     </div>
                 </div>

@@ -7,6 +7,8 @@ export type JobStatus = "Active" | "Expired" | "Draft";
 export interface JobFormData {
     title: string;
     companyName: string;
+    companyId? : string;
+    recruiterId: string;
     category: string;
     jobType: JobType;
     isRemote: boolean;

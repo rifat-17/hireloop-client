@@ -28,6 +28,7 @@ import { DeleteJobDialog } from "@/components/dashboard/DeleteJobDialog";
 import { getJobs } from "@/lib/api/jobs";
 import { formatSalary, formatDate } from "@/lib/formatters";
 import type { JobListing } from "@/types";
+import { authClient } from "@/lib/auth-client";
 
 export type { JobListing };
 
@@ -41,12 +42,16 @@ export default function ManageJobsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
 
+    const { data: session } = authClient.useSession();
+    const recruiterId = session?.user.id;
+
     useEffect(() => {
         const fetchJobs = async () => {
             try {
                 setLoading(true);
                 setError("");
-                const data = await getJobs();
+                const query = recruiterId ? `recruiterId=${recruiterId}` : "";
+                const data = await getJobs(query);
                 setJobs(data || []);
             } catch (err) {
                 setError(
@@ -58,7 +63,7 @@ export default function ManageJobsPage() {
         };
 
         fetchJobs();
-    }, []);
+    }, [recruiterId]);
 
     const filteredJobs = useMemo(() => {
         return jobs.filter((job) => {
@@ -128,27 +133,25 @@ export default function ManageJobsPage() {
                             filter === "All"
                                 ? jobs.length
                                 : filter === "Active"
-                                ? activeCount
-                                : expiredCount;
+                                    ? activeCount
+                                    : expiredCount;
                         const isSelected = statusFilter === filter;
                         return (
                             <button
                                 key={filter}
                                 type="button"
                                 onClick={() => setStatusFilter(filter)}
-                                className={`flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-medium transition ${
-                                    isSelected
+                                className={`flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-medium transition ${isSelected
                                         ? "bg-violet-600 text-white shadow-sm shadow-violet-600/30"
                                         : "border border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                }`}
+                                    }`}
                             >
                                 <span>{filter}</span>
                                 <span
-                                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                                        isSelected
+                                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${isSelected
                                             ? "bg-white/20 text-white"
                                             : "bg-white/10 text-gray-400"
-                                    }`}
+                                        }`}
                                 >
                                     {count}
                                 </span>
@@ -267,12 +270,16 @@ export default function ManageJobsPage() {
 
                                     {/* Applicants */}
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Users className="size-4 text-violet-400" />
-                                            <span className="text-sm font-semibold text-white">
+                                        <Link
+                                            href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+                                            className="group inline-flex items-center gap-2 rounded-lg py-1 transition hover:text-violet-300"
+                                            title="View applications for this job"
+                                        >
+                                            <Users className="size-4 text-violet-400 transition group-hover:scale-110" />
+                                            <span className="text-sm font-semibold text-white underline-offset-4 transition group-hover:text-violet-300 group-hover:underline">
                                                 {job.applicantsCount} Candidates
                                             </span>
-                                        </div>
+                                        </Link>
                                     </TableCell>
 
                                     {/* Status */}
@@ -294,7 +301,15 @@ export default function ManageJobsPage() {
 
                                     {/* Actions */}
                                     <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-1">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <Link
+                                                href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+                                                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/20 bg-violet-600/10 px-2.5 py-1.5 text-xs font-medium text-violet-300 transition hover:border-violet-500/40 hover:bg-violet-600/20 hover:text-white"
+                                                title="View applications"
+                                            >
+                                                <Users className="size-3.5" />
+                                                <span>Applications</span>
+                                            </Link>
                                             <Link
                                                 href={`/browse-jobs/${job._id}`}
                                                 className="rounded-lg p-2 text-gray-400 transition hover:bg-white/5 hover:text-white"

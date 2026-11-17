@@ -112,9 +112,9 @@ export const menuItemsByRole: Record<Role, MenuItem[]> = {
             icon: LayoutDashboard,
         },
         {
-            id: "admin-users",
+             id: "admin-users",
             name: "Users",
-            url: "/dashboard/admin/users",
+             url: "/dashboard/admin/users",
             icon: Users,
         },
         {

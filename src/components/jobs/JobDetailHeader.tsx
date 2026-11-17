@@ -22,6 +22,7 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { applyToAJob, getApplicationsCount } from "@/lib/actions/applications";
 import { toast } from "@/components/ui/toast";
+import { getUserPremiumById } from "@/lib/api/users";
 
 interface JobDetailHeaderProps {
     job: JobListing;
@@ -57,18 +58,24 @@ export function JobDetailHeader({
             });
             return;
         }
+        
 
         setIsApplying(true);
+        
+        try {   
+            // is premium user
+            const premiumResult = await getUserPremiumById(user.id)
 
-        try {
+            console.log(premiumResult);
 
             // number of jobs applied by this user,
 
             const countResult = await getApplicationsCount(`applicantId=${user.id}`);
             //less more than 10 and not premium user
-            if (countResult.count >= 10) {
+            if (!premiumResult.premium && countResult.count >= 2) {
                 // redirect to the payment page
                 router.push('/payment');
+
                 return;
             }
 

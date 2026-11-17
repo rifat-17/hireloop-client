@@ -27,9 +27,10 @@ import {
     JOB_CATEGORIES,
     JOB_TYPES,
     SALARY_FREQUENCIES,
-    INITIAL_JOB_FORM_DATA,
+    // INITIAL_JOB_FORM_DATA,
 } from "@/constants";
 import type { JobFormData, JobType, SalaryFrequency } from "@/types";
+import { useSession } from "@/lib/auth-client";
 
 export type { JobFormData, JobType, SalaryFrequency };
 
@@ -39,12 +40,34 @@ const inputClasses =
 const selectClasses =
     "h-11 w-full rounded-xl border border-white/10 bg-[#16161c] px-3.5 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500";
 
+
+
 export default function NewJobPage() {
-    const [formData, setFormData] = useState<JobFormData>(INITIAL_JOB_FORM_DATA);
+    const { data: session } = useSession();
+
+    const [formData, setFormData] = useState<JobFormData>({
+        title: "",
+        companyName: "",
+        recruiterId: session?.user.id ?? "",
+        category: "Engineering & Tech",
+        jobType: "Full-time",
+        isRemote: false,
+        location: "",
+        deadline: "",
+        minSalary: "",
+        maxSalary: "",
+        salaryFrequency: "per year",
+        responsibilities: "",
+        requirements: "",
+        status: "Active",
+        applicantsCount: 0,
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
 
     const router = useRouter();
+
+
 
     const handleChange = (
         e: React.ChangeEvent<
@@ -137,7 +160,7 @@ export default function NewJobPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                            setFormData(INITIAL_JOB_FORM_DATA);
+                            // setFormData(INITIAL_JOB_FORM_DATA);
                             setSuccess(false);
                         }}
                         className="border-emerald-500/30 text-xs text-emerald-300 hover:bg-emerald-500/20"
@@ -219,11 +242,10 @@ export default function NewJobPage() {
                                         key={type}
                                         type="button"
                                         onClick={() => handleJobTypeChange(type)}
-                                        className={`flex h-11 items-center justify-center rounded-xl border text-sm font-medium transition ${
-                                            isSelected
-                                                ? "border-violet-500 bg-violet-600/20 text-white shadow-sm shadow-violet-500/20"
-                                                : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
-                                        }`}
+                                        className={`flex h-11 items-center justify-center rounded-xl border text-sm font-medium transition ${isSelected
+                                            ? "border-violet-500 bg-violet-600/20 text-white shadow-sm shadow-violet-500/20"
+                                            : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20 hover:text-white"
+                                            }`}
                                     >
                                         {type}
                                     </button>
@@ -257,14 +279,12 @@ export default function NewJobPage() {
                             type="button"
                             aria-checked={formData.isRemote}
                             role="switch"
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                formData.isRemote ? "bg-violet-600" : "bg-white/20"
-                            }`}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${formData.isRemote ? "bg-violet-600" : "bg-white/20"
+                                }`}
                         >
                             <span
-                                className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                    formData.isRemote ? "translate-x-5" : "translate-x-0"
-                                }`}
+                                className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${formData.isRemote ? "translate-x-5" : "translate-x-0"
+                                    }`}
                             />
                         </button>
                     </div>

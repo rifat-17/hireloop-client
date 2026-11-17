@@ -1,4 +1,4 @@
-import type { JobFormData, JobType, SalaryFrequency, UserRole } from "@/types";
+import type { JobType, SalaryFrequency, UserRole } from "@/types";
 
 export const JOB_CATEGORIES = [
     "Engineering & Tech",
@@ -24,20 +24,25 @@ export const SALARY_FREQUENCIES: SalaryFrequency[] = [
 
 export const USER_ROLES: readonly UserRole[] = ["seeker", "recruiter", "admin"] as const;
 
-export const INITIAL_JOB_FORM_DATA: JobFormData = {
-    title: "",
-    companyName: "",
-    category: "Engineering & Tech",
-    jobType: "Full-time",
-    isRemote: false,
-    location: "",
-    deadline: "",
-    minSalary: "",
-    maxSalary: "",
-    salaryFrequency: "per year",
-    responsibilities: "",
-    requirements: "",
-    status: "Active",
-    applicantsCount: 0,
-};
+
+
+
+// export const INITIAL_JOB_FORM_DATA: JobFormData = {
+    
+//     title: "",
+//     companyName: "",
+//     recruiterId: session?.user.id ,
+//     category: "Engineering & Tech",
+//     jobType: "Full-time",
+//     isRemote: false,
+//     location: "",
+//     deadline: "",
+//     minSalary: "",
+//     maxSalary: "",
+//     salaryFrequency: "per year",
+//     responsibilities: "",
+//     requirements: "",
+//     status: "Active",
+//     applicantsCount: 0,
+// };
 

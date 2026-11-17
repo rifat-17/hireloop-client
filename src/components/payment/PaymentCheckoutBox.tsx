@@ -5,8 +5,6 @@ import {
     Lock,
     CreditCard,
     Shield,
-    Loader2,
-    ArrowRight,
     User,
     Mail,
 } from "lucide-react";
@@ -100,7 +98,7 @@ export function PaymentCheckoutBox({
             {/* Price Breakdown */}
             <div className="space-y-3 border-b border-white/5 py-4 text-xs sm:text-sm">
                 <div className="flex justify-between text-gray-300">
-                    <span>HireLoop Pro (Monthly Plan)</span>
+                    <span>HireLoop Pro</span>
                     <span className="font-semibold text-white">$19.00</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
@@ -142,17 +140,24 @@ export function PaymentCheckoutBox({
                 disabled={isProcessing}
                 className="h-12 w-full rounded-xl bg-violet-600 text-sm font-semibold text-white shadow-lg shadow-violet-950/40 transition hover:bg-violet-500 active:scale-[0.99] disabled:opacity-60 sm:h-14 sm:text-base"
             >
-                {isProcessing ? (
+                {/* {isProcessing ? (
                     <>
                         <Loader2 className="mr-2 size-5 animate-spin" />
                         <span>Preparing Checkout...</span>
                     </>
                 ) : (
                     <>
-                        <span>Proceed to Stripe Checkout</span>
+                        <span>Proceed to Checkout</span>
                         <ArrowRight className="ml-2 size-4" />
                     </>
-                )}
+                )} */}
+                <form action="/api/checkout_sessions" method="POST">
+                    <section>
+                        <button type="submit" role="link">
+                            Checkout
+                        </button>
+                    </section>
+                </form>
             </Button>
 
             {/* Security Assurance Footer */}
