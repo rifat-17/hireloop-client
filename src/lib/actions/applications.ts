@@ -83,10 +83,18 @@ export async function getApplicationsByJobId(
  * Placeholder for updating an applicant's status in the database.
  * To be connected by the user later.
  */
+export interface UpdateStatusResponse {
+    success?: boolean;
+    acknowledged?: boolean;
+    modifiedCount?: number;
+    matchedCount?: number;
+    message?: string;
+}
+
 export async function updateApplicationStatus(
     applicationId: string,
     status: string
-): Promise<{ success: boolean; message?: string }> {
+): Promise<UpdateStatusResponse> {
     try {
         const response = await fetch(`${API_URL}/applications/${applicationId}`, {
             method: "PATCH",

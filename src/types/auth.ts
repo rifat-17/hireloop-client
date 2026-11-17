@@ -18,3 +18,18 @@ export interface SignUpFormData {
     acceptTerms: boolean;
 }
 
+export interface AppUser {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified?: boolean;
+    image?: string | null;
+    role: UserRole;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
+    banned?: boolean | null;
+    banReason?: string | null;
+    premium?: boolean;
+}
+
+

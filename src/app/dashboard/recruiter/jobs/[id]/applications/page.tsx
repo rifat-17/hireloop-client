@@ -197,7 +197,7 @@ export default function RecruiterJobApplicationsPage({
 
         console.log('update result ', result);
 
-        if (result.modifiedCount > 0) {
+        if (result && (result.modifiedCount ?? 0) > 0) {
 
             setApplications((prev) =>
                 prev.map((app) =>
